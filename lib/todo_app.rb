@@ -1,11 +1,11 @@
 class TodoApp < CommandLineApp
-  attr_reader :projects, :tasks
+  attr_reader :view, :model
 
   def initialize(input, output)
     @input = input
     @output = output
-    @projects = []
-    @tasks = []
+    @model = Model.new
+    @view = View.new(output)
   end
 
   def get_input
@@ -13,112 +13,87 @@ class TodoApp < CommandLineApp
   end
 
   def print_project_menu
-    puts "Welcome"
-    puts "'list' to list projects"
-    puts "'create' to create a new project"
-    puts "'edit' to edit a project"
-    puts "'rename' to rename a project"
-    puts "'delete' to rename a project"
+    @view.print_project_menu
   end
 
   def print_task_menu(project_name)
-    puts "Editing Project: #{project_name} "
-    puts "'list' to list tasks"
-    puts "'create' to create a new task"
-    puts "'edit' to edit a task"
-    puts "'complete' to complete a task and remove it from the list"
+    @view.print_task_menu(project_name)
   end
 
   def print_projects_list(projects)
-    puts "Projects:"
-    if projects.empty?
-      puts "  none"
-    else
-      puts "  #{projects.join(', ')}"
-    end
+    @view.print_projects_list(projects)
   end
 
   def print_tasks_list(tasks)
-    puts "Tasks:"
-    if tasks.empty?
-      puts "  none"
-    else
-      puts "  #{tasks.join(', ')}"
-    end
+    @view.print_tasks_list(tasks)
   end
 
   def print_project_create_prompt
-    puts "Please enter the new project name:\n"
+    @view.print_project_create_prompt
   end
 
   def print_project_delete_prompt
-    puts "Please enter the project name to delete:\n"
+    @view.print_project_delete_prompt
   end
 
   def print_project_rename_prompt
-    puts "Please enter the project name to rename:\n"
+    @view.print_project_rename_prompt
   end
 
   def print_prompt_for_new_project_name
-    puts "Please enter the new project name:\n"
+    @view.print_prompt_for_new_project_name
   end
 
   def print_project_edit_prompt
-    puts "Which project would you like to edit?\n"
+    @view.print_project_edit_prompt
   end
 
   def print_task_edit_prompt
-    puts "Please enter the task you would like to edit."
+    @view.print_task_edit_prompt
   end
 
   def print_prompt_for_new_task_name
-    puts "Please enter the new task name:\n"
+    @view.print_prompt_for_new_task_name
   end
 
   def print_task_not_here_message(name)
-    puts "task not found: '#{name}'"
+    @view.print_task_not_here_message(name)
   end
 
   def print_new_task_prompt
-    puts "Please enter the task you would like to add."
+    @view.print_new_task_prompt
   end
 
   def project_add(name)
-    projects << name
+    model.adding_project(name)
   end
 
   def project_delete(name)
-    if project_present?(name)
-      projects.delete(name)
-    end
+    model.project_delete(name)
   end
 
   def project_present?(name)
-    projects.include?(name)
+    model.project_present?(name)
   end
 
   def project_rename(old_name, new_name)
-    projects.delete(old_name)
-    projects << new_name
+    model.project_rename(old_name, new_name)
   end
 
   def add_task(name)
-    tasks << name
+    model.add_task(name)
   end
 
   def task_present?(name)
-    tasks.include?(name)
+    model.task_present?(name)
   end
 
   def task_rename(old_name, new_name)
-    tasks.delete(old_name)
-    tasks << new_name
+    model.task_rename(old_name, new_name)
   end
 
   def complete_task(name)
-    tasks.delete(name)
-    completed_task = "#{name}: completed"
-    tasks << completed_task
+    model.complete_task(name)
   end
 
   def run
@@ -130,7 +105,7 @@ class TodoApp < CommandLineApp
       input = get_input
 
       if input == 'list'
-        print_projects_list(projects)
+        print_projects_list(model.projects)
       elsif input == 'create'
         print_project_create_prompt
         project_add(get_input)
@@ -165,7 +140,7 @@ class TodoApp < CommandLineApp
     while task_menu
       task_input = get_input
       if task_input == 'list'
-        print_tasks_list(tasks)
+        print_tasks_list(model.tasks)
       elsif task_input == 'create'
         print_new_task_prompt
         add_task(get_input)
